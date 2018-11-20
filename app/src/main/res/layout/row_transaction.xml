@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minHeight="@dimen/row_height"
+    android:paddingLeft="@dimen/margin_medium"
+    android:paddingRight="@dimen/margin_medium"
+    android:paddingTop="@dimen/margin_small"
+    android:paddingBottom="@dimen/margin_small"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <RelativeLayout
+        android:id="@+id/row1"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/lblDate"
+            android:textSize="@dimen/font_size"
+            android:layout_alignParentTop="true"
+            android:text="20 December 2018"
+            android:layout_width="160dp"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/lblPaymentType"
+            android:textSize="@dimen/font_size_small"
+            android:textColor="@color/text_color_caption"
+            android:layout_below="@+id/lblDate"
+            android:text="20 December 2018"
+            android:layout_width="160dp"
+            android:layout_height="wrap_content" />
+    </RelativeLayout>
+
+
+    <TextView
+        android:id="@+id/lblCustomer"
+        android:layout_centerHorizontal="true"
+        android:textSize="@dimen/font_size"
+        android:layout_toRightOf="@+id/row1"
+        android:layout_toLeftOf="@+id/lblGrandTotal"
+        android:layout_marginLeft="@dimen/margin_large"
+        android:layout_marginRight="@dimen/margin_large"
+        android:layout_centerVertical="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/lblGrandTotal"
+        android:gravity="end"
+        android:textSize="@dimen/font_size"
+        android:layout_toLeftOf="@+id/row2"
+        android:layout_marginLeft="@dimen/margin_medium"
+        android:layout_marginRight="@dimen/margin_medium"
+        android:layout_centerVertical="true"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content" />
+
+    <RelativeLayout
+        android:id="@+id/row2"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_width="40dp"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:layout_centerHorizontal="true"
+            android:id="@+id/imgRight"
+            android:layout_width="24dp"
+            android:layout_height="24dp" />
+
+        <TextView
+            android:id="@+id/lblStatus"
+            android:textSize="@dimen/font_size_small"
+            android:gravity="center"
+            android:textColor="@color/text_color_caption"
+            android:layout_below="@+id/imgRight"
+            android:text="Finished"
+            android:layout_width="40dp"
+            android:layout_height="wrap_content" />
+
+    </RelativeLayout>
+
+</RelativeLayout>

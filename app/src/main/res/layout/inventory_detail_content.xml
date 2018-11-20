@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+    <android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/card_view"
+        android:background="@color/card_background"
+        android:layout_width="@dimen/content_width"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:layout_margin="@dimen/margin_large"
+        card_view:cardCornerRadius="4dp"
+        card_view:layout_constraintBottom_toBottomOf="parent"
+        card_view:layout_constraintEnd_toEndOf="parent"
+        card_view:layout_constraintStart_toStartOf="parent"
+        card_view:layout_constraintTop_toTopOf="parent">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent">
+
+                <RelativeLayout
+                    android:layout_margin="@dimen/margin_medium"
+                    android:orientation="vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:id="@+id/lblItemName"
+                        android:layout_alignParentStart="true"
+                        android:layout_toLeftOf="@+id/lblHargaJual"
+                        android:layout_marginRight="@dimen/margin_large"
+                        android:textStyle="bold"
+                        android:textSize="@dimen/font_size_large"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <TextView
+                        android:layout_alignParentEnd="true"
+                        android:id="@+id/lblHargaJual"
+                        android:textStyle="bold"
+                        android:textSize="@dimen/font_size_large"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                </RelativeLayout>
+
+                <View
+                    android:background="@color/page_background"
+                    android:layout_width="match_parent"
+                    android:layout_height="4px"/>
+
+                <RelativeLayout
+                    android:minHeight="@dimen/row_height"
+                    android:paddingLeft="@dimen/margin_medium"
+                    android:paddingRight="@dimen/margin_medium"
+                    android:background="@color/list_header"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:id="@+id/lblDate"
+                        android:textSize="@dimen/font_size"
+                        android:layout_alignParentStart="true"
+                        android:textStyle="bold"
+                        android:text="Transaction Date"
+                        android:layout_centerVertical="true"
+                        android:layout_width="200dp"
+                        android:layout_height="wrap_content" />
+
+                    <TextView
+                        android:id="@+id/lblQuantity"
+                        android:gravity="end"
+                        android:text="Qty"
+                        android:textStyle="bold"
+                        android:textSize="@dimen/font_size"
+                        android:layout_marginLeft="@dimen/margin_medium"
+                        android:layout_marginRight="@dimen/margin_medium"
+                        android:layout_toLeftOf="@+id/imgRight"
+                        android:layout_centerVertical="true"
+                        android:layout_width="60dp"
+                        android:layout_height="wrap_content" />
+
+                    <ImageView
+                        android:visibility="invisible"
+                        android:id="@+id/imgRight"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:src="@drawable/ic_edit_black_24dp"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp" />
+
+                </RelativeLayout>
+
+                <TextView
+                    android:id="@+id/lblNoData"
+                    android:text="No Data Available"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+                <ListView
+                    android:id="@+id/lvList"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"/>
+
+            </LinearLayout>
+
+            <RelativeLayout
+                android:id="@+id/loading"
+                android:background="#ddffffff"
+                android:visibility="gone"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ProgressBar
+                    android:layout_centerVertical="true"
+                    android:layout_centerHorizontal="true"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            </RelativeLayout>
+        </RelativeLayout>
+    </android.support.v7.widget.CardView>
+
+</android.support.constraint.ConstraintLayout>
