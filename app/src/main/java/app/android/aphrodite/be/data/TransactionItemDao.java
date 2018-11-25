@@ -8,6 +8,7 @@ import android.arch.persistence.room.Query;
 
 import java.util.List;
 
+import app.android.aphrodite.be.enums.TransactionTypeEnum;
 import app.android.aphrodite.be.model.Inventory;
 import app.android.aphrodite.be.model.TransactionItem;
 
@@ -27,20 +28,26 @@ public interface TransactionItemDao {
     @Query("SELECT * FROM transactionitem WHERE id=:id AND isActive=1 LIMIT 1")
     TransactionItem findById(Integer id);
 
-    @Query("SELECT SUM(quantity) as quantity " +
-            "FROM TransactionItem " +
-            "WHERE name=:name " +
-            "AND hargaJual=:sellPrice " +
-            "AND hargaBeli=:capitalPrice " +
-            "AND isActive=1 ")
-    Double findUsageByProps(String name, Double sellPrice, Double capitalPrice);
+    @Query("SELECT SUM(i.quantity) as quantity " +
+            "FROM TransactionItem i " +
+            "INNER JOIN `transaction` h " +
+            "ON h.id = i.headerId " +
+            "AND h.type = :type " +
+            "WHERE i.name=:name " +
+            "AND i.hargaJual=:sellPrice " +
+            "AND i.hargaBeli=:capitalPrice " +
+            "AND i.isActive=1 ")
+    Double findUsageByProps(String name, Double sellPrice, Double capitalPrice, String type);
 
-    @Query("SELECT * from transactionitem " +
-            "WHERE name=:itemName " +
-            "AND hargaBeli=:capitalPrice " +
-            "AND hargaJual=:sellPrice " +
-            "ORDER BY id DESC")
-    List<TransactionItem> getSameTransactionItem(String itemName, Double capitalPrice, Double sellPrice);
+    @Query("SELECT i.* from transactionitem i " +
+            "INNER JOIN `transaction` h " +
+            "ON h.id = i.headerId " +
+            "AND h.type=:type " +
+            "WHERE i.name=:itemName " +
+            "AND i.hargaBeli=:capitalPrice " +
+            "AND i.hargaJual=:sellPrice " +
+            "ORDER BY i.id DESC")
+    List<TransactionItem> getSameTransactionItem(String itemName, Double capitalPrice, Double sellPrice, String type);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void save(TransactionItem data);

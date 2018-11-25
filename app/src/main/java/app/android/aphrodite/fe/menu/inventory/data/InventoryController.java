@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import app.android.aphrodite.be.enums.TransactionTypeEnum;
 import app.android.aphrodite.be.model.TransactionItem;
 import app.android.aphrodite.fe.base.BaseController;
 import app.android.aphrodite.fe.base.BaseEvent;
@@ -48,7 +49,8 @@ public class InventoryController extends BaseController {
                     }
 
                     for (Inventory item : data) {
-                        Double usage = getDB().transactionItemDao().findUsageByProps(item.getName(), item.getSellPrice(), item.getCapitalPrice());
+                        Double usage = getDB().transactionItemDao().findUsageByProps(item.getName(), item.getSellPrice(),
+                                item.getCapitalPrice(), TransactionTypeEnum.READY_STOCK);
                         if (usage == null)
                             usage = 0d;
                         item.setQuantity(item.getQuantity() - usage);
@@ -81,7 +83,8 @@ public class InventoryController extends BaseController {
                     }
 
                     ArrayList<TransactionItem> trans = new ArrayList<>();
-                    trans.addAll(getDB().transactionItemDao().getSameTransactionItem(item.getName(), item.getCapitalPrice(), item.getSellPrice()));
+                    trans.addAll(getDB().transactionItemDao().getSameTransactionItem(item.getName(), item.getCapitalPrice(), item.getSellPrice(),
+                            TransactionTypeEnum.READY_STOCK));
 
                     for (TransactionItem transItem : trans) {
                         Inventory iv = new Inventory(-1, transItem.getTransactionDate(), transItem.getName(), transItem.getHargaBeli(), transItem.getHargaJual(),
@@ -190,7 +193,8 @@ public class InventoryController extends BaseController {
                     data.addAll(getDB().inventoryDao().selectAllAvailable(query));
 
                     for (Inventory item : data) {
-                        Double usage = getDB().transactionItemDao().findUsageByProps(item.getName(), item.getSellPrice(), item.getCapitalPrice());
+                        Double usage = getDB().transactionItemDao().findUsageByProps(item.getName(), item.getSellPrice(),
+                                item.getCapitalPrice(), TransactionTypeEnum.READY_STOCK);
                         if (usage == null)
                             usage = 0d;
                         item.setQuantity(item.getQuantity() - usage);

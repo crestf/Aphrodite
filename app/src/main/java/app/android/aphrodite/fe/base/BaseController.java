@@ -5,6 +5,7 @@ import android.content.Context;
 import android.os.AsyncTask;
 
 import app.android.aphrodite.be.data.AppDatabase;
+import app.android.aphrodite.be.enums.TransactionTypeEnum;
 
 public class BaseController {
 
@@ -51,12 +52,11 @@ public class BaseController {
         task.execute();
     }
 
-
     public Double findAvailableStock(String name, Double hargaJual, Double hargaBeli) {
         Double inventoryTotal = getDB().inventoryDao().findStockByProps(name, hargaJual, hargaBeli);
         if (inventoryTotal == null)
             inventoryTotal = 0d;
-        Double inTransaction = getDB().transactionItemDao().findUsageByProps(name, hargaJual, hargaBeli);
+        Double inTransaction = getDB().transactionItemDao().findUsageByProps(name, hargaJual, hargaBeli, TransactionTypeEnum.READY_STOCK);
         if (inTransaction == null)
             inTransaction = 0d;
         return inventoryTotal - inTransaction;
