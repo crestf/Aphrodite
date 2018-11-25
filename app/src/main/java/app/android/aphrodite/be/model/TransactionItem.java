@@ -18,6 +18,9 @@ public class TransactionItem {
     @ColumnInfo(name = "transactionDate")
     private String transactionDate;
 
+    @ColumnInfo(name = "itemId")
+    private Integer itemId;
+
     @ColumnInfo(name = "name")
     private String name;
 
@@ -33,19 +36,11 @@ public class TransactionItem {
     @ColumnInfo(name = "isActive")
     private Boolean isActive;
 
-    @Ignore
-    public TransactionItem(Integer id, String name, Double hargaBeli, Double hargaJual, Double quantity) {
-        this.id = id;
-        this.name = name;
-        this.hargaBeli = hargaBeli;
-        this.hargaJual = hargaJual;
-        this.quantity = quantity;
-    }
-
-    public TransactionItem(Integer id, Integer headerId, String transactionDate, String name, Double hargaBeli, Double hargaJual, Double quantity, Boolean isActive) {
+    public TransactionItem(Integer id, Integer headerId, String transactionDate, Integer itemId, String name, Double hargaBeli, Double hargaJual, Double quantity, Boolean isActive) {
         this.id = id;
         this.headerId = headerId;
         this.transactionDate = transactionDate;
+        this.itemId = itemId;
         this.name = name;
         this.hargaBeli = hargaBeli;
         this.hargaJual = hargaJual;
@@ -67,6 +62,22 @@ public class TransactionItem {
 
     public void setHeaderId(Integer headerId) {
         this.headerId = headerId;
+    }
+
+    public String getTransactionDate() {
+        return transactionDate;
+    }
+
+    public void setTransactionDate(String transactionDate) {
+        this.transactionDate = transactionDate;
+    }
+
+    public Integer getItemId() {
+        return itemId;
+    }
+
+    public void setItemId(Integer itemId) {
+        this.itemId = itemId;
     }
 
     public String getName() {
@@ -107,13 +118,5 @@ public class TransactionItem {
 
     public void setActive(Boolean active) {
         isActive = active;
-    }
-
-    public String getTransactionDate() {
-        return transactionDate;
-    }
-
-    public void setTransactionDate(String transactionDate) {
-        this.transactionDate = transactionDate;
     }
 }

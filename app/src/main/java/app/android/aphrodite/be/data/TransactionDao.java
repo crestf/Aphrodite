@@ -19,6 +19,8 @@ public interface TransactionDao {
             "FROM `transaction`")
     List<Transaction> selectAll();
 
+
+
     @Query("SELECT * " +
             "FROM `transaction` " +
             "WHERE transactionDate BETWEEN :startDate AND :endDate " +
@@ -47,17 +49,21 @@ public interface TransactionDao {
             "ORDER BY id DESC")
     List<Transaction> selectAllByStatus(String startDate, String endDate, String status);
 
+
+
     @Query("SELECT * FROM `transaction` WHERE id=:id LIMIT 1")
     Transaction findById(Integer id);
 
 
-    @Query("SELECT SUM(grandTotal) " +
-            "FROM `transaction` " +
-            "WHERE customerName=:customerName " +
-            "AND transactionDate BETWEEN :startDate AND :endDate " +
-            "AND paymentType=:paymentType " +
-            "AND isActive = 1")
-    Double getRecapTotal(String customerName, String startDate, String endDate, String paymentType);
+
+    @Query("SELECT h.customerName as name, COUNT(DISTINCT h.id) as qty, h.paymentType as type, " +
+            "SUM(h.grandTotal - h.discount) as jual, (" +
+                "SELECT SUM(d.hargaBeli * d.quantity) FROM TransactionItem d WHERE d.headerId = h.id " +
+            ") as beli " +
+            "FROM `Transaction` h " +
+            "WHERE h.transactionDate BETWEEN :startDate AND :endDate " +
+            "GROUP BY h.customerName, h.paymentType")
+    List<Recap> getTotalRecap(String startDate, String endDate);
 
     @Query("SELECT DISTINCT customerName as name " +
             "FROM `transaction` " +
@@ -92,6 +98,8 @@ public interface TransactionDao {
             "AND customerName = :name " +
             "GROUP BY customerName")
     Double getTotalQty(String name, String startDate, String endDate);
+
+
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     Long save(Transaction data);

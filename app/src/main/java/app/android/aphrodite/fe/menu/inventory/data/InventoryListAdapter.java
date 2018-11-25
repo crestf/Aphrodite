@@ -16,12 +16,6 @@ import butterknife.ButterKnife;
 
 public class InventoryListAdapter extends ArrayAdapter<Inventory> {
 
-    public Boolean selectable = false;
-
-    public Integer getSelectedIndex() {
-        return selectedIndex;
-    }
-
     public void setSelectedIndex(Integer selectedIndex) {
         this.selectedIndex = selectedIndex;
         notifyDataSetChanged();
@@ -31,7 +25,10 @@ public class InventoryListAdapter extends ArrayAdapter<Inventory> {
 
     public InventoryListAdapter(Context context, Boolean selectable) {
         super(context, R.layout.row_inventory);
-        this.selectable = selectable;
+    }
+
+    public Inventory getSelectedItem() {
+        return getItem(selectedIndex);
     }
 
     public class ViewHolder {
@@ -57,10 +54,10 @@ public class InventoryListAdapter extends ArrayAdapter<Inventory> {
         }
 
         viewHolder.lblItemName.setText(getItem(position).getName());
-        viewHolder.lblHargaJual.setText(HelperUtil.formatNumber(getItem(position).getSellPrice()));
+        viewHolder.lblHargaJual.setText(HelperUtil.formatNumber(getItem(position).getHargaJual()));
         viewHolder.lblQuantity.setText(HelperUtil.formatNumber(getItem(position).getQuantity()));
 
-        if (selectable && position == selectedIndex){
+        if (position == selectedIndex){
             convertView.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.primary));
         } else if (getItem(position).getActive()) {
             convertView.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.white));

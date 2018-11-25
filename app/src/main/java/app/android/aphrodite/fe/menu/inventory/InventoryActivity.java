@@ -45,8 +45,6 @@ public class InventoryActivity extends BaseActivity {
     @BindView(R.id.nav_view)        NavigationView navigationView;
     @BindView(R.id.drawer_layout)   DrawerLayout drawer;
     @BindView(R.id.fab)             FloatingActionButton fab;
-//    @BindView(R.id.txtStartDate)    EditText txtStartDate;
-//    @BindView(R.id.txtEndDate)      EditText txtEndDate;
     @BindView(R.id.lblNoData)       TextView lblNoData;
     @BindView(R.id.lvList)          ListView lvList;
     @BindView(R.id.cbActive)        CheckBox cbActive;
@@ -117,20 +115,6 @@ public class InventoryActivity extends BaseActivity {
 
         txtSearch.addTextChangedListener(searchListener);
 
-//        lvList.setOnScrollListener(new AbsListView.OnScrollListener() {
-//            @Override
-//            public void onScrollStateChanged(AbsListView view, int scrollState) {
-//
-//            }
-//
-//            @Override
-//            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-//                if((firstVisibleItem + visibleItemCount) >= adapter.getCount() - 7){
-//                    Log.v("A", "Reached bottom");
-//                }
-//            }
-//        });
-
         refreshContent();
     }
 
@@ -170,46 +154,6 @@ public class InventoryActivity extends BaseActivity {
         i.putExtras(b);
         startActivity(i);
     }
-
-//    @OnClick(R.id.txtStartDate)
-//    public void txtStartDateOnClick() {
-//        Calendar c = Calendar.getInstance();
-//        c.setTime(HelperUtil.formatDisplayToDate(txtStartDate.getText().toString()));
-//        DatePickerDialog dialog = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
-//            @Override
-//            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-//                Calendar c = Calendar.getInstance();
-//                c.set(year, month, dayOfMonth);
-//                Date d = c.getTime();
-//                String date = HelperUtil.formatDateToDisplay(d);
-//                txtStartDate.setText(date);
-//                SharedPrefManager.getInstance(InventoryActivity.this).setStartDate(date);
-//                refreshContent();
-//            }
-//        }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
-//        dialog.getDatePicker().setMaxDate(HelperUtil.formatDisplayToDate(txtEndDate.getText().toString()).getTime());
-//        dialog.show();
-//    }
-//
-//    @OnClick(R.id.txtEndDate)
-//    public void txtEndDateOnClick() {
-//        Calendar c = Calendar.getInstance();
-//        c.setTime(HelperUtil.formatDisplayToDate(txtEndDate.getText().toString()));
-//        DatePickerDialog dialog = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
-//            @Override
-//            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-//                Calendar c = Calendar.getInstance();
-//                c.set(year, month, dayOfMonth);
-//                Date d = c.getTime();
-//                String date = HelperUtil.formatDateToDisplay(d);
-//                txtEndDate.setText(date);
-//                SharedPrefManager.getInstance(InventoryActivity.this).setEndDate(date);
-//                refreshContent();
-//            }
-//        }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
-//        dialog.getDatePicker().setMinDate(HelperUtil.formatDisplayToDate(txtStartDate.getText().toString()).getTime());
-//        dialog.show();
-//    }
 
     @OnClick({R.id.lblCbActive, R.id.cbActive})
     public void lblCbActiveOnClick() {

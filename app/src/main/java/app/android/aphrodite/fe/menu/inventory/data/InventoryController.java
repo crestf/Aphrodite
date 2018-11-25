@@ -6,11 +6,8 @@ import android.content.Context;
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.Date;
 
-import app.android.aphrodite.be.enums.TransactionTypeEnum;
 import app.android.aphrodite.be.model.TransactionItem;
 import app.android.aphrodite.fe.base.BaseController;
 import app.android.aphrodite.fe.base.BaseEvent;
@@ -34,26 +31,14 @@ public class InventoryController extends BaseController {
             @Override
             public BaseEvent doInBackground() {
                 try {
-//                    String startDate = HelperUtil.formatDisplayToDB(SharedPrefManager.getInstance(context).getStartDate());
-//                    String endDate = HelperUtil.formatDisplayToDB(SharedPrefManager.getInstance(context).getEndDate());
                     Boolean showInactiveContent = SharedPrefManager.getInstance(context).getShowInactive();
                     String query = "%" + searchString + "%";
 
                     ArrayList<Inventory> data = new ArrayList<>();
                     if (showInactiveContent) {
                         data.addAll(getDB().inventoryDao().selectAll(query));
-//                        data.addAll(getDB().inventoryDao().selectAll(query, startDate, endDate));
                     } else {
                         data.addAll(getDB().inventoryDao().selectAllActive(query));
-//                        data.addAll(getDB().inventoryDao().selectAllActive(query, startDate, endDate));
-                    }
-
-                    for (Inventory item : data) {
-                        Double usage = getDB().transactionItemDao().findUsageByProps(item.getName(), item.getSellPrice(),
-                                item.getCapitalPrice(), TransactionTypeEnum.READY_STOCK);
-                        if (usage == null)
-                            usage = 0d;
-                        item.setQuantity(item.getQuantity() - usage);
                     }
 
                     return new InventoryListFetchComplete(data);
@@ -73,36 +58,14 @@ public class InventoryController extends BaseController {
         execute(new AsyncProcess() {
             @Override
             public BaseEvent doInBackground() {
-                Inventory item = getDB().inventoryDao().findById(id);
                 try {
-                    ArrayList<Inventory> data = new ArrayList<>();
-                    data.addAll(getDB().inventoryDao().getSameItemInventory(item.getName(), item.getCapitalPrice(), item.getSellPrice()));
+                    Inventory item = getDB().inventoryDao().findById(id);
+                    ArrayList<TransactionItem> data = new ArrayList<>();
 
-                    for (Inventory d : data) {
-                        d.setTransaction(false);
-                    }
-
-                    ArrayList<TransactionItem> trans = new ArrayList<>();
-                    trans.addAll(getDB().transactionItemDao().getSameTransactionItem(item.getName(), item.getCapitalPrice(), item.getSellPrice(),
-                            TransactionTypeEnum.READY_STOCK));
-
-                    for (TransactionItem transItem : trans) {
-                        Inventory iv = new Inventory(-1, transItem.getTransactionDate(), transItem.getName(), transItem.getHargaBeli(), transItem.getHargaJual(),
-                                transItem.getQuantity(), transItem.getActive());
-                        iv.setTransaction(true);
-                        data.add(iv);
-                    }
-
-                    Collections.sort(data, new Comparator<Inventory>() {
-                        @Override
-                        public int compare(Inventory o1, Inventory o2) {
-                            return o1.getDate().compareTo(o2.getDate());
-                        }
-                    });
-
+                    data.addAll(getDB().transactionItemDao().selectAllByItemId(id));
                     return new InventoryDetailListFetchComplete(item, data);
                 } catch (Exception e) {
-                    return new InventoryDetailListFetchComplete(item, e.getMessage());
+                    return new InventoryDetailListFetchComplete(e.getMessage());
                 }
             }
 
@@ -119,9 +82,10 @@ public class InventoryController extends BaseController {
             public BaseEvent doInBackground() {
                 try {
                     Inventory item = getDB().inventoryDao().findById(itemId);
-                    item.setId(null);
-                    item.setQuantity(null);
-                    return new InventoryDataFetchComplete(item);
+                    TransactionItem data = new TransactionItem(null, null,
+                            HelperUtil.formatDateToDB(new Date()), itemId,
+                            item.getName(), item.getHargaBeli(), item.getHargaJual(), null, null);
+                    return new InventoryDataFetchComplete(data);
                 } catch (Exception e) {
                     return new InventoryDataFetchComplete(e.getMessage());
                 }
@@ -139,7 +103,7 @@ public class InventoryController extends BaseController {
             @Override
             public BaseEvent doInBackground() {
                 try {
-                    Inventory item = getDB().inventoryDao().findById(id);
+                    TransactionItem item = getDB().transactionItemDao().findById(id);
                     return new InventoryDataFetchComplete(item);
                 } catch (Exception e) {
                     return new InventoryDataFetchComplete(e.getMessage());
@@ -153,16 +117,26 @@ public class InventoryController extends BaseController {
         });
     }
 
-    public void saveInventory(final Inventory data) {
+    public void addInventory(final TransactionItem data) {
         execute(new AsyncProcess() {
             @Override
             public BaseEvent doInBackground() {
                 getDB().beginTransaction();
                 try {
-                    getDB().inventoryDao().save(data);
+                    Integer itemId;
+                    Inventory item = getDB().inventoryDao().findByProps(data.getName(), data.getHargaBeli(), data.getHargaJual());
+                    if (item == null) {
+                        itemId = createItem(data.getName(), data.getHargaBeli(), data.getHargaJual(), data.getQuantity());
+                    } else {
+                        itemId = item.getId();
+                    }
 
-                    if (data.getActive() && findAvailableStock(data.getName(), data.getSellPrice(), data.getCapitalPrice()) < 0) {
-                        throw new Exception("Cannot save data due to invalid stock (<0)");
+                    data.setItemId(itemId);
+                    getDB().transactionItemDao().save(data);
+
+                    if (item != null) {
+                        item.setQuantity(item.getQuantity() + data.getQuantity());
+                        getDB().inventoryDao().save(item);
                     }
 
                     getDB().setTransactionSuccessful();
@@ -182,6 +156,57 @@ public class InventoryController extends BaseController {
         });
     }
 
+    public void updateInventory(final TransactionItem data) {
+        execute(new AsyncProcess() {
+            @Override
+            public BaseEvent doInBackground() {
+                getDB().beginTransaction();
+                try {
+                    Inventory currentItem = getDB().inventoryDao().findById(data.getItemId());
+                    TransactionItem currentTrans = getDB().transactionItemDao().findById(data.getId());
+                    if (currentItem == null || currentTrans == null) {
+                        throw new Exception("Data not found");
+                    }
+
+                    Double updatedQuantity = currentItem.getQuantity();
+                    if (currentTrans.getActive()) {
+                        updatedQuantity = updatedQuantity - currentTrans.getQuantity();
+                    }
+                    if (data.getActive()) {
+                        updatedQuantity = updatedQuantity + data.getQuantity();
+                    }
+
+                    if (updatedQuantity < 0) {
+                        throw new Exception("Cannot update data. Stock not enough");
+                    }
+
+                    getDB().transactionItemDao().save(data);
+
+                    currentItem.setQuantity(updatedQuantity);
+                    getDB().inventoryDao().save(currentItem);
+
+                    getDB().setTransactionSuccessful();
+                    getDB().endTransaction();
+
+                    return new InventorySaveComplete(true, "Data Saved");
+                } catch (Exception e) {
+                    getDB().endTransaction();
+                    return new InventorySaveComplete(false, e.getMessage());
+                }
+            }
+
+            @Override
+            public void onComplete(BaseEvent event) {
+                EventBus.getDefault().post(event);
+            }
+        });
+    }
+
+    private Integer createItem(String name, Double hargaBeli, Double hargaJual, Double quantity) {
+        Inventory item = new Inventory(null, name, hargaBeli, hargaJual, quantity, true);
+        return getDB().inventoryDao().save(item).intValue();
+    }
+
     public void fetchAvailableInventory(final String searchString) {
         execute(new AsyncProcess() {
             @Override
@@ -192,22 +217,7 @@ public class InventoryController extends BaseController {
                     ArrayList<Inventory> data = new ArrayList<>();
                     data.addAll(getDB().inventoryDao().selectAllAvailable(query));
 
-                    for (Inventory item : data) {
-                        Double usage = getDB().transactionItemDao().findUsageByProps(item.getName(), item.getSellPrice(),
-                                item.getCapitalPrice(), TransactionTypeEnum.READY_STOCK);
-                        if (usage == null)
-                            usage = 0d;
-                        item.setQuantity(item.getQuantity() - usage);
-                    }
-
-                    ArrayList<Inventory> result = new ArrayList<>();
-                    for (Inventory item : data) {
-                        if (item.getQuantity() > 0) {
-                            result.add(item);
-                        }
-                    }
-
-                    return new InventoryListFetchComplete(result);
+                    return new InventoryListFetchComplete(data);
                 } catch (Exception e) {
                     return new InventoryListFetchComplete(e.getMessage());
                 }

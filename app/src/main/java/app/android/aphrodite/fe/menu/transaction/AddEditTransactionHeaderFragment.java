@@ -1,9 +1,11 @@
 package app.android.aphrodite.fe.menu.transaction;
 
 import android.app.DatePickerDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TextInputLayout;
+import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -27,6 +29,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import app.android.aphrodite.R;
+import app.android.aphrodite.be.model.TransactionItem;
 import app.android.aphrodite.fe.base.BaseFragment;
 import app.android.aphrodite.fe.common.GlobalState;
 import app.android.aphrodite.fe.common.HelperUtil;
@@ -35,6 +38,7 @@ import app.android.aphrodite.be.enums.TransactionStatusEnum;
 import app.android.aphrodite.be.enums.TransactionTypeEnum;
 import app.android.aphrodite.fe.event.RecalculateTransactionHeaderEvent;
 import app.android.aphrodite.be.model.Transaction;
+import app.android.aphrodite.fe.menu.inventory.AddEditInventoryActivity;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -62,6 +66,7 @@ public class AddEditTransactionHeaderFragment extends BaseFragment {
     @BindView(R.id.tilSubtotal)     TextInputLayout tilSubtotal;
     @BindView(R.id.tilGrandTotal)     TextInputLayout tilGrandTotal;
 
+
     Double subtotal = 0d;
 
     ArrayList<String> transactionTypeList = new ArrayList<>();
@@ -69,6 +74,7 @@ public class AddEditTransactionHeaderFragment extends BaseFragment {
     ArrayList<String> paymentTypeList = new ArrayList<>();
 
     Boolean _isedit = false;
+    private String transactionType;
 
     public AddEditTransactionHeaderFragment() { }
 
@@ -86,9 +92,8 @@ public class AddEditTransactionHeaderFragment extends BaseFragment {
         EventBus.getDefault().unregister(this);
     }
 
-    public void setIsEdit(Boolean isEdit) {
-        this._isedit = isEdit;
-        cbActive.setVisibility(_isedit ? View.VISIBLE : View.GONE);
+    public AddEditTransactionActivity getParent() {
+        return (AddEditTransactionActivity) getActivity();
     }
 
     @Override
@@ -122,30 +127,39 @@ public class AddEditTransactionHeaderFragment extends BaseFragment {
             }
         });
 
-        if (GlobalState.getInstance().getTransactionData() != null) {
-            setHeaderData(GlobalState.getInstance().getTransactionData());
-        }
+        prepareView();
 
         return view;
-    }
-
-    public AddEditTransactionActivity getParent() {
-        return (AddEditTransactionActivity) getActivity();
     }
 
     public void prepareList() {
         transactionTypeList.addAll(TransactionTypeEnum.list);
         txtTransactionType.setText(transactionTypeList.get(0));
-
-        if (GlobalState.getInstance().getTransactionData() == null) {
-            getParent().setTransactionType(transactionTypeList.get(0));
-        }
+        transactionType = transactionTypeList.get(0);
 
         statusList.addAll(TransactionStatusEnum.list);
         txtStatus.setText(statusList.get(0));
 
         paymentTypeList.addAll(PaymentTypeEnum.list);
         txtPaymentType.setText(paymentTypeList.get(0));
+    }
+
+    private void prepareView() {
+        Transaction header = GlobalState.getInstance().getTransactionData();
+        if (header != null) {
+            _isedit = true;
+            txtTransactionType.setText(header.getType());
+            txtCustomer.setText(header.getCustomerName());
+            txtTransactionDate.setText(HelperUtil.formatDBToDisplay(header.getTransactionDate()));
+            txtTransactionDate.setTag(HelperUtil.formatDBToDate(header.getTransactionDate()));
+            txtPaymentType.setText(header.getPaymentType());
+            txtStatus.setText(header.getStatus());
+            txtNote.setText(header.getNote());
+            txtDiscount.setText(HelperUtil.formatCurrency(header.getDiscount()));
+            cbActive.setChecked(header.getActive());
+        }
+
+        cbActive.setVisibility(_isedit ? View.VISIBLE : View.GONE);
     }
 
     @OnClick(R.id.txtTransactionDate)
@@ -185,8 +199,35 @@ public class AddEditTransactionHeaderFragment extends BaseFragment {
     public void txtTransactionTypeOnClick(View v) {
         showPopup(transactionTypeList, (EditText) v, new Callback() {
             @Override
-            public void callback(String value) {
-                getParent().setTransactionType(value);
+            public void callback(final String newTransactionType) {
+                final String prevType = AddEditTransactionHeaderFragment.this.transactionType;
+                if (prevType == null || !prevType.equalsIgnoreCase(newTransactionType)) {
+                    if (getParent().isCurrentlyHasDetail()) {
+                        DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                switch (which) {
+                                    case DialogInterface.BUTTON_POSITIVE:
+                                        AddEditTransactionHeaderFragment.this.transactionType = newTransactionType;
+                                        getParent().clearDetail();
+                                        break;
+                                    case DialogInterface.BUTTON_NEGATIVE:
+                                        AddEditTransactionHeaderFragment.this.transactionType = prevType;
+                                        txtTransactionType.setText(prevType);
+                                        break;
+                                }
+                            }
+                        };
+                        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                        builder.setMessage("Changing Transaction Type will clear all inputted items")
+                                .setTitle("Change Transaction Type?")
+                                .setPositiveButton("Change", listener)
+                                .setNegativeButton("Cancel", listener)
+                                .show();
+                    } else {
+                        AddEditTransactionHeaderFragment.this.transactionType = newTransactionType;
+                    }
+                }
             }
         });
     }
@@ -199,18 +240,10 @@ public class AddEditTransactionHeaderFragment extends BaseFragment {
         showPopup(paymentTypeList, (EditText)v, null);
     }
 
-    public void setHeaderData(Transaction header) {
-        setIsEdit(true);
-        txtTransactionType.setText(header.getType());
-        txtCustomer.setText(header.getCustomerName());
-        txtTransactionDate.setText(HelperUtil.formatDBToDisplay(header.getTransactionDate()));
-        txtTransactionDate.setTag(HelperUtil.formatDBToDate(header.getTransactionDate()));
-        txtPaymentType.setText(header.getPaymentType());
-        txtStatus.setText(header.getStatus());
-        txtNote.setText(header.getNote());
-        txtDiscount.setText(HelperUtil.formatCurrency(header.getDiscount()));
-        cbActive.setChecked(header.getActive());
+    public String getTransactionType() {
+        return transactionType;
     }
+
 
     private interface Callback {
         void callback(String value);
@@ -266,19 +299,22 @@ public class AddEditTransactionHeaderFragment extends BaseFragment {
     }
 
     public Transaction getHeaderData() {
-        Transaction header = new Transaction(txtTransactionType.getText().toString(),
-                txtCustomer.getText().toString(),
-                HelperUtil.formatDateToDB((Date)txtTransactionDate.getTag()),
-                txtPaymentType.getText().toString(),
-                txtStatus.getText().toString(),
-                HelperUtil.extractCurrency(txtDiscount),
-                txtNote.getText().toString(),
-                Double.parseDouble(txtSubtotal.getText().toString().replace(",", "")),
-                Double.parseDouble(txtGrandTotal.getText().toString().replace(",", "")),
-                _isedit ? cbActive.isChecked() : true);
-        if (GlobalState.getInstance().getTransactionData() != null) {
-            header.setId(GlobalState.getInstance().getTransactionData().getId());
+        Transaction header = GlobalState.getInstance().getTransactionData();
+        if (header == null) {
+            header = new Transaction();
         }
+
+        header.setType(txtTransactionType.getText().toString());
+        header.setCustomerName(txtCustomer.getText().toString());
+        header.setTransactionDate(HelperUtil.formatDateToDB((Date)txtTransactionDate.getTag()));
+        header.setPaymentType(txtPaymentType.getText().toString());
+        header.setStatus(txtStatus.getText().toString());
+        header.setDiscount(HelperUtil.extractCurrency(txtDiscount));
+        header.setNote(txtNote.getText().toString());
+        header.setSubTotal(Double.parseDouble(txtSubtotal.getText().toString().replace(",", "")));
+        header.setGrandTotal(Double.parseDouble(txtGrandTotal.getText().toString().replace(",", "")));
+        header.setActive(_isedit ? cbActive.isChecked() : true);
+
         return header;
     }
 }

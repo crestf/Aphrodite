@@ -81,7 +81,7 @@ public class InventoryDetailActivity extends BaseActivity {
 
     @OnItemClick(R.id.lvList)
     public void lvListOnItemClick(AdapterView<?> parent, View view, int position, long id) {
-        if (!adapter.getItem(position).getTransaction()) {
+        if (adapter.getItem(position).getHeaderId() == null) {
             Intent i = new Intent(this, AddEditInventoryActivity.class);
             Bundle b = new Bundle();
             b.putInt("id", adapter.getItem(position).getId());
@@ -121,7 +121,7 @@ public class InventoryDetailActivity extends BaseActivity {
         if (!event.getSuccess()) {
             showError(event.getMessage());
         } else {
-            lblHargaJual.setText(HelperUtil.formatNumber(event.getItem().getSellPrice()));
+            lblHargaJual.setText(HelperUtil.formatNumber(event.getItem().getHargaJual()));
             lblItemName.setText(event.getItem().getName());
 
             adapter.clear();

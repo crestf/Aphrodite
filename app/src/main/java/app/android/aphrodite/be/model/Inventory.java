@@ -11,17 +11,14 @@ public class Inventory {
     @PrimaryKey(autoGenerate = true)
     private Integer id;
 
-    @ColumnInfo(name = "date")
-    private String date;
-
     @ColumnInfo(name = "name")
     private String name;
 
-    @ColumnInfo(name = "capitalPrice")
-    private Double capitalPrice;
+    @ColumnInfo(name = "hargaBeli")
+    private Double hargaBeli;
 
-    @ColumnInfo(name = "sellPrice")
-    private Double sellPrice;
+    @ColumnInfo(name = "hargaJual")
+    private Double hargaJual;
 
     @ColumnInfo(name = "quantity")
     private Double quantity;
@@ -29,24 +26,11 @@ public class Inventory {
     @ColumnInfo(name = "isActive")
     private Boolean isActive;
 
-    @Ignore
-    private Boolean isTransaction;
-
-    public Inventory(int id, String date, String name, Double capitalPrice, Double sellPrice, Double quantity, Boolean isActive) {
+    public Inventory(Integer id, String name, Double hargaBeli, Double hargaJual, Double quantity, Boolean isActive) {
         this.id = id;
-        this.date = date;
         this.name = name;
-        this.capitalPrice = capitalPrice;
-        this.sellPrice = sellPrice;
-        this.quantity = quantity;
-        this.isActive = isActive;
-    }
-    @Ignore
-    public Inventory(String date, String name, Double capitalPrice, Double sellPrice, Double quantity, Boolean isActive) {
-        this.date = date;
-        this.name = name;
-        this.capitalPrice = capitalPrice;
-        this.sellPrice = sellPrice;
+        this.hargaBeli = hargaBeli;
+        this.hargaJual = hargaJual;
         this.quantity = quantity;
         this.isActive = isActive;
     }
@@ -59,14 +43,6 @@ public class Inventory {
         this.id = id;
     }
 
-    public String getDate() {
-        return date;
-    }
-
-    public void setDate(String date) {
-        this.date = date;
-    }
-
     public String getName() {
         return name;
     }
@@ -75,20 +51,20 @@ public class Inventory {
         this.name = name;
     }
 
-    public Double getCapitalPrice() {
-        return capitalPrice;
+    public Double getHargaBeli() {
+        return hargaBeli;
     }
 
-    public void setCapitalPrice(Double capitalPrice) {
-        this.capitalPrice = capitalPrice;
+    public void setHargaBeli(Double hargaBeli) {
+        this.hargaBeli = hargaBeli;
     }
 
-    public Double getSellPrice() {
-        return sellPrice;
+    public Double getHargaJual() {
+        return hargaJual;
     }
 
-    public void setSellPrice(Double sellPrice) {
-        this.sellPrice = sellPrice;
+    public void setHargaJual(Double hargaJual) {
+        this.hargaJual = hargaJual;
     }
 
     public Double getQuantity() {
@@ -105,13 +81,5 @@ public class Inventory {
 
     public void setActive(Boolean active) {
         isActive = active;
-    }
-
-    public Boolean getTransaction() {
-        return isTransaction;
-    }
-
-    public void setTransaction(Boolean transaction) {
-        isTransaction = transaction;
     }
 }

@@ -44,37 +44,13 @@ public class Transaction {
     private Boolean isActive;
 
     @Ignore
-    private Double totalBCA;
-    @Ignore
-    private Double totalBRI;
-    @Ignore
-    private Double totalCash;
-    @Ignore
-    private Double modalBCA;
-    @Ignore
-    private Double modalBRI;
-    @Ignore
-    private Double modalCash;
+    private List<TransactionItem> detail;
 
     @Ignore
-    private List<TransactionItem> items;
+    public Transaction() {}
 
-    public Transaction(Integer id, String type, String customerName, String transactionDate, String paymentType, String status, Double discount, String note, Double subTotal, Double grandTotal, List<TransactionItem> items, Boolean isActive) {
+    public Transaction(Integer id, String type, String customerName, String transactionDate, String paymentType, String status, Double discount, String note, Double subTotal, Double grandTotal, Boolean isActive) {
         this.id = id;
-        this.type = type;
-        this.customerName = customerName;
-        this.transactionDate = transactionDate;
-        this.paymentType = paymentType;
-        this.status = status;
-        this.discount = discount;
-        this.note = note;
-        this.subTotal = subTotal;
-        this.grandTotal = grandTotal;
-        this.items = items;
-        this.isActive = isActive;
-    }
-
-    public Transaction(String type, String customerName, String transactionDate, String paymentType, String status, Double discount, String note, Double subTotal, Double grandTotal, Boolean isActive) {
         this.type = type;
         this.customerName = customerName;
         this.transactionDate = transactionDate;
@@ -167,14 +143,6 @@ public class Transaction {
         this.grandTotal = grandTotal;
     }
 
-    public List<TransactionItem> getItems() {
-        return items;
-    }
-
-    public void setItems(List<TransactionItem> items) {
-        this.items = items;
-    }
-
     public Boolean getActive() {
         return isActive;
     }
@@ -183,27 +151,11 @@ public class Transaction {
         isActive = active;
     }
 
-    public Double getTotalBCA() {
-        return totalBCA;
+    public List<TransactionItem> getDetail() {
+        return detail;
     }
 
-    public void setTotalBCA(Double totalBCA) {
-        this.totalBCA = totalBCA;
-    }
-
-    public Double getTotalBRI() {
-        return totalBRI;
-    }
-
-    public void setTotalBRI(Double totalBRI) {
-        this.totalBRI = totalBRI;
-    }
-
-    public Double getTotalCash() {
-        return totalCash;
-    }
-
-    public void setTotalCash(Double totalCash) {
-        this.totalCash = totalCash;
+    public void setDetail(List<TransactionItem> detail) {
+        this.detail = detail;
     }
 }

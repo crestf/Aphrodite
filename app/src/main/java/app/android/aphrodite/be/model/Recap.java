@@ -10,6 +10,10 @@ public class Recap {
 
     public String name;
     public Double qty;
+    public String type;
+    public Double beli;
+    public Double jual;
+
     public Double modalBCA;
     public Double totalBCA;
     public Double modalBRI;

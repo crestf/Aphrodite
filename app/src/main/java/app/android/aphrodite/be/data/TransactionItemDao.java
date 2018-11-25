@@ -6,6 +6,7 @@ import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.OnConflictStrategy;
 import android.arch.persistence.room.Query;
 
+import java.util.Collection;
 import java.util.List;
 
 import app.android.aphrodite.be.enums.TransactionTypeEnum;
@@ -19,45 +20,29 @@ public interface TransactionItemDao {
             "FROM TransactionItem")
     List<TransactionItem> selectAll();
 
+    @Query("SELECT * FROM transactionitem " +
+            "WHERE itemId = :id " +
+            "ORDER BY transactionDate DESC")
+    List<TransactionItem> selectAllByItemId(Integer id);
 
     @Query("SELECT * " +
             "FROM TransactionItem " +
-            "WHERE headerId=:id ")
-    List<TransactionItem> findByHeaderId(Integer id);
+            "WHERE headerId = :id ")
+    List<TransactionItem> selectAllByHeaderId(Integer id);
 
-    @Query("SELECT * FROM transactionitem WHERE id=:id AND isActive=1 LIMIT 1")
+
+
+    @Query("SELECT * FROM transactionitem WHERE id=:id")
     TransactionItem findById(Integer id);
 
-    @Query("SELECT SUM(i.quantity) as quantity " +
-            "FROM TransactionItem i " +
-            "INNER JOIN `transaction` h " +
-            "ON h.id = i.headerId " +
-            "AND h.type = :type " +
-            "WHERE i.name=:name " +
-            "AND i.hargaJual=:sellPrice " +
-            "AND i.hargaBeli=:capitalPrice " +
-            "AND i.isActive=1 ")
-    Double findUsageByProps(String name, Double sellPrice, Double capitalPrice, String type);
 
-    @Query("SELECT i.* from transactionitem i " +
-            "INNER JOIN `transaction` h " +
-            "ON h.id = i.headerId " +
-            "AND h.type=:type " +
-            "WHERE i.name=:itemName " +
-            "AND i.hargaBeli=:capitalPrice " +
-            "AND i.hargaJual=:sellPrice " +
-            "ORDER BY i.id DESC")
-    List<TransactionItem> getSameTransactionItem(String itemName, Double capitalPrice, Double sellPrice, String type);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void save(TransactionItem data);
+    Long save(TransactionItem data);
 
     @Delete
     void delete(TransactionItem data);
 
     @Query("DELETE FROM transactionitem")
     void deleteAll();
-
-    @Query("DELETE FROM transactionitem WHERE headerId=:id")
-    void deleteByHeaderId(Long id);
 }

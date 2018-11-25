@@ -18,7 +18,7 @@ import app.android.aphrodite.be.model.TransactionItem;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class TransactionItemActivity extends BaseActivity {
+public class TransactionItemPOAddActivity extends BaseActivity {
 
     @BindView(R.id.toolbar)         Toolbar toolbar;
     @BindView(R.id.txtName)         EditText txtName;
@@ -96,7 +96,7 @@ public class TransactionItemActivity extends BaseActivity {
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
                     case DialogInterface.BUTTON_POSITIVE:
-                        TransactionItemActivity.super.realOnBackPressed();
+                        TransactionItemPOAddActivity.super.realOnBackPressed();
                         break;
                     case DialogInterface.BUTTON_NEGATIVE:
                         break;
@@ -123,10 +123,14 @@ public class TransactionItemActivity extends BaseActivity {
 
         TransactionItem data = new TransactionItem(
                 null,
+                null,
                 txtName.getText().toString(),
+                null,
+                null,
                 HelperUtil.extractCurrency(txtHargaBeli),
                 HelperUtil.extractCurrency(txtHargaJual),
-                HelperUtil.extractCurrency(txtQty)
+                HelperUtil.extractCurrency(txtQty),
+                true
         );
         EventBus.getDefault().post(new TransactionItemChangeEvent(originalIndex, data));
         finish();

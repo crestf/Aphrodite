@@ -34,7 +34,7 @@ import butterknife.ButterKnife;
 public class InventoryPickerDialogFragment extends DialogFragment {
 
     public interface Callback {
-        void onItemSelected(Inventory item, Double qty);
+        void onItemSelected(TransactionItem item);
     }
 
     @BindView(R.id.txtSearch)       EditText txtSearch;
@@ -127,6 +127,7 @@ public class InventoryPickerDialogFragment extends DialogFragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 adapter.setSelectedIndex(position);
+                data = convertItem(adapter.getItem(position));
             }
         });
 
@@ -145,15 +146,17 @@ public class InventoryPickerDialogFragment extends DialogFragment {
                     qty = Double.parseDouble(txtQty.getText().toString());
                 } catch (Exception e) { }
 
-                if (adapter.getSelectedIndex() < 0) {
+                if (data == null) {
                     txtError.setText("Please select item");
                 } else if (qty == 0) {
                     txtError.setText("Invalid quantity");
-                } else if (adapter.getSelectedIndex() > -1 && qty > 0) {
-                    if (qty > adapter.getItem(adapter.getSelectedIndex()).getQuantity()) {
+                } else if (data != null && qty > 0) {
+                    if (qty > adapter.getSelectedItem().getQuantity()) {
                         txtError.setText("Quantity not enough");
                     } else {
-                        callback.onItemSelected(adapter.getItem(adapter.getSelectedIndex()), qty);
+                        data.setQuantity(qty);
+                        data.setItemId(adapter.getSelectedItem().getId());
+                        callback.onItemSelected(data);
                         dismiss();
                     }
                 }
@@ -165,6 +168,12 @@ public class InventoryPickerDialogFragment extends DialogFragment {
         }
 
         return dialog;
+    }
+
+    private TransactionItem convertItem(Inventory item) {
+        return new TransactionItem(null, null, null,
+                data != null ? data.getItemId() : null, item.getName(), item.getHargaBeli(),
+                item.getHargaJual(), 0d, true);
     }
 
     public void repopulateList() {
@@ -182,12 +191,11 @@ public class InventoryPickerDialogFragment extends DialogFragment {
             if (data != null) {
                 for (int i = 0; i < adapter.getCount(); i++) {
                     if (adapter.getItem(i).getName().equalsIgnoreCase(data.getName()) &&
-                            adapter.getItem(i).getSellPrice().equals(data.getHargaJual()) &&
-                            adapter.getItem(i).getCapitalPrice().equals(data.getHargaBeli())) {
+                            adapter.getItem(i).getHargaJual().equals(data.getHargaJual()) &&
+                            adapter.getItem(i).getHargaBeli().equals(data.getHargaBeli())) {
                         adapter.setSelectedIndex(i);
                     }
                 }
-                data = null;
             }
 
             if (adapter.getCount() > 0) {

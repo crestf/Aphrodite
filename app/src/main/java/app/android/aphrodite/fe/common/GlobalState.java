@@ -27,7 +27,7 @@ public class GlobalState {
         if (header == null)
             return null;
 
-        header.setItems(detail);
+        header.setDetail(detail);
         return header;
     }
 

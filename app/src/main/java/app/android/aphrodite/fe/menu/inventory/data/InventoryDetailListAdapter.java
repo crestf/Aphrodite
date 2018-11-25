@@ -11,12 +11,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import app.android.aphrodite.R;
+import app.android.aphrodite.be.model.TransactionItem;
 import app.android.aphrodite.fe.common.HelperUtil;
 import app.android.aphrodite.be.model.Inventory;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class InventoryDetailListAdapter extends ArrayAdapter<Inventory> {
+public class InventoryDetailListAdapter extends ArrayAdapter<TransactionItem> {
 
     public InventoryDetailListAdapter(Context context) {
         super(context, R.layout.row_inventory);
@@ -44,16 +45,20 @@ public class InventoryDetailListAdapter extends ArrayAdapter<Inventory> {
             viewHolder = (ViewHolder) convertView.getTag();
         }
 
-        viewHolder.lblDate.setText(HelperUtil.formatDBToDisplay(getItem(position).getDate()));
+        viewHolder.lblDate.setText(HelperUtil.formatDBToDisplay(getItem(position).getTransactionDate()));
         viewHolder.lblQuantity.setText(HelperUtil.formatNumber(getItem(position).getQuantity()));
         if (!getItem(position).getActive()) {
             convertView.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.dark_gray));
-        } else if (getItem(position).getTransaction()) {
-            viewHolder.imgRight.setVisibility(View.INVISIBLE);
+        } else if (getItem(position).getHeaderId() != null) {
             convertView.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.light_green));
         } else {
-            viewHolder.imgRight.setVisibility(View.VISIBLE);
             convertView.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.white));
+        }
+
+        if (getItem(position).getHeaderId() == null) {
+            viewHolder.imgRight.setVisibility(View.VISIBLE);
+        } else {
+            viewHolder.imgRight.setVisibility(View.INVISIBLE);
         }
 
         return convertView;

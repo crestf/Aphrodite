@@ -24,6 +24,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import app.android.aphrodite.R;
+import app.android.aphrodite.be.model.TransactionItem;
 import app.android.aphrodite.fe.common.HelperUtil;
 import app.android.aphrodite.fe.common.SharedPrefManager;
 import app.android.aphrodite.fe.menu.inventory.event.InventoryDataFetchComplete;
@@ -119,10 +120,10 @@ public class AddEditInventoryActivity extends BaseActivity {
             showError(event.getMessage());
         } else {
             txtName.setText(event.getData().getName());
-            txtHargaBeli.setText(HelperUtil.formatCurrency(event.getData().getCapitalPrice()));
-            txtHargaJual.setText(HelperUtil.formatCurrency(event.getData().getSellPrice()));
-            txtTransactionDate.setText(HelperUtil.formatDBToDisplay(event.getData().getDate()));
-            txtTransactionDate.setTag(HelperUtil.formatDBToDate(event.getData().getDate()));
+            txtHargaBeli.setText(HelperUtil.formatCurrency(event.getData().getHargaBeli()));
+            txtHargaJual.setText(HelperUtil.formatCurrency(event.getData().getHargaJual()));
+            txtTransactionDate.setText(HelperUtil.formatDBToDisplay(event.getData().getTransactionDate()));
+            txtTransactionDate.setTag(HelperUtil.formatDBToDate(event.getData().getTransactionDate()));
             txtQty.setText(HelperUtil.formatCurrency(event.getData().getQuantity()));
             cbActive.setChecked(event.getData().getActive());
         }
@@ -201,19 +202,26 @@ public class AddEditInventoryActivity extends BaseActivity {
     public void save() {
         if (validate()) {
             setLoading(true);
-            Inventory data = new Inventory(
-                    HelperUtil.formatDateToDB((Date)txtTransactionDate.getTag()), txtName.getText().toString(),
+
+            TransactionItem data = new TransactionItem(
+                    null,
+                    null,
+                    HelperUtil.formatDateToDB((Date) txtTransactionDate.getTag()),
+                    null,
+                    txtName.getText().toString(),
                     HelperUtil.extractCurrency(txtHargaBeli),
                     HelperUtil.extractCurrency(txtHargaJual),
                     HelperUtil.extractCurrency(txtQty),
                     true);
 
-            if (_editMode) {
+            if (!_editMode) {
+                controller.addInventory(data);
+            } else {
                 data.setId(getIntent().getIntExtra("id", -1));
+                data.setItemId(getIntent().getIntExtra("itemId", -1));
                 data.setActive(cbActive.isChecked());
+                controller.updateInventory(data);
             }
-
-            controller.saveInventory(data);
         }
     }
 

@@ -10,11 +10,9 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
@@ -29,14 +27,16 @@ import org.greenrobot.eventbus.Subscribe;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import app.android.aphrodite.R;
+import app.android.aphrodite.be.model.Transaction;
+import app.android.aphrodite.be.model.TransactionItem;
 import app.android.aphrodite.fe.common.GlobalState;
 import app.android.aphrodite.fe.common.HelperUtil;
 import app.android.aphrodite.fe.common.SharedPrefManager;
 import app.android.aphrodite.fe.base.BaseActivity;
 import app.android.aphrodite.be.enums.TransactionStatusEnum;
-import app.android.aphrodite.fe.menu.inventory.AddEditInventoryActivity;
 import app.android.aphrodite.fe.menu.transaction.data.TransactionController;
 import app.android.aphrodite.fe.menu.transaction.data.TransactionListAdapter;
 import app.android.aphrodite.fe.menu.transaction.event.TransactionDataFetchComplete;
@@ -86,9 +86,7 @@ public class TransactionActivity extends BaseActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                GlobalState.getInstance().clearTransactionData();
-                Intent i = new Intent(TransactionActivity.this, AddEditTransactionActivity.class);
-                startActivity(i);
+                openAddEditPage(null, null);
             }
         });
 
@@ -108,6 +106,15 @@ public class TransactionActivity extends BaseActivity {
         refreshContent();
     }
 
+    private void openAddEditPage(Transaction header, List<TransactionItem> detail) {
+        GlobalState.getInstance().clearTransactionData();
+        if (header != null && detail != null) {
+            GlobalState.getInstance().putTransactionData(header, detail);
+        }
+        Intent i = new Intent(TransactionActivity.this, AddEditTransactionActivity.class);
+        startActivity(i);
+    }
+
     @OnItemClick(R.id.lvList)
     public void lvListOnItemClick(AdapterView<?> parent, View view, int position, long id) {
         setLoading(true);
@@ -120,13 +127,7 @@ public class TransactionActivity extends BaseActivity {
         if (!event.getSuccess()) {
             showError(event.getMessage());
         } else {
-            GlobalState.getInstance().putTransactionData(event.getHeader(), event.getDetail());
-
-            Intent i = new Intent(this, AddEditTransactionActivity.class);
-            Bundle b = new Bundle();
-            b.putInt("id", 1);
-            i.putExtras(b);
-            startActivity(i);
+            openAddEditPage(event.getHeader(), event.getDetail());
         }
     }
 

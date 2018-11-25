@@ -70,7 +70,7 @@ public class AddEditTransactionDetailFragment extends Fragment {
 
 
         if (GlobalState.getInstance().getTransactionData() != null) {
-            setDetailData(GlobalState.getInstance().getTransactionData().getItems());
+            setDetailData(GlobalState.getInstance().getTransactionData().getDetail());
         }
 
         return view;
@@ -86,6 +86,7 @@ public class AddEditTransactionDetailFragment extends Fragment {
             addItem(event.getData());
             adjustList();
         } else {
+            adapter.getItem(event.getOriginalIndex()).setItemId(event.getData().getItemId());
             adapter.getItem(event.getOriginalIndex()).setQuantity(event.getData().getQuantity());
             adapter.getItem(event.getOriginalIndex()).setHargaBeli(event.getData().getHargaBeli());
             adapter.getItem(event.getOriginalIndex()).setHargaJual(event.getData().getHargaJual());
@@ -125,16 +126,15 @@ public class AddEditTransactionDetailFragment extends Fragment {
         if (GlobalState.getInstance().getTransactionData().getType().equalsIgnoreCase(TransactionTypeEnum.READY_STOCK)) {
             DialogFragment newFragment = InventoryPickerDialogFragment.newInstance(new InventoryPickerDialogFragment.Callback() {
                 @Override
-                public void onItemSelected(Inventory item, Double qty) {
-                    TransactionItem data = new TransactionItem(null, item.getName(), item.getCapitalPrice(), item.getSellPrice(), qty);
-                    EventBus.getDefault().post(new TransactionItemChangeEvent(position, data));
+                public void onItemSelected(TransactionItem item) {
+                    EventBus.getDefault().post(new TransactionItemChangeEvent(position, item));
                 }
             }, adapter.getItem(position));
             newFragment.show(getActivity().getSupportFragmentManager(), "dialog");
         } else {
             TransactionItem item = adapter.getItem(position);
 
-            Intent i = new Intent(getContext(), TransactionItemActivity.class);
+            Intent i = new Intent(getContext(), TransactionItemPOAddActivity.class);
             Bundle b = new Bundle();
             b.putInt("index", position);
             b.putString("name", item.getName());

@@ -23,8 +23,6 @@ import java.util.List;
 import app.android.aphrodite.R;
 import app.android.aphrodite.fe.common.GlobalState;
 import app.android.aphrodite.fe.common.HelperUtil;
-import app.android.aphrodite.fe.menu.inventory.AddEditInventoryActivity;
-import app.android.aphrodite.fe.menu.transaction.event.TransactionDataFetchComplete;
 import app.android.aphrodite.fe.menu.transaction.event.TransactionItemChangeEvent;
 import app.android.aphrodite.fe.base.BaseActivity;
 import app.android.aphrodite.fe.menu.transaction.data.TransactionController;
@@ -45,44 +43,6 @@ public class AddEditTransactionActivity extends BaseActivity {
 
     TransactionController controller = new TransactionController(this);
     private ViewPagerAdapter adapter;
-    private boolean isEditMode = false;
-
-    public String getTransactionType() {
-        return transactionType;
-    }
-
-    public void setTransactionType(final String newTransactionType) {
-        final String prevType = this.transactionType;
-        if (prevType == null || !prevType.equalsIgnoreCase(newTransactionType)) {
-            if (adapter.getDetail().getDetailData() != null && adapter.getDetail().getDetailData().size() > 0) {
-                DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        switch (which) {
-                            case DialogInterface.BUTTON_POSITIVE:
-                                AddEditTransactionActivity.this.transactionType = newTransactionType;
-                                adapter.getDetail().setDetailData(new ArrayList<TransactionItem>());
-                                break;
-                            case DialogInterface.BUTTON_NEGATIVE:
-                                AddEditTransactionActivity.this.transactionType = prevType;
-                                adapter.getHeader().txtTransactionType.setText(prevType);
-                                break;
-                        }
-                    }
-                };
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setMessage("Changing Transaction Type will clear all inputted items")
-                        .setTitle("Change Transaction Type?")
-                        .setPositiveButton("Change", listener)
-                        .setNegativeButton("Cancel", listener)
-                        .show();
-            } else {
-                this.transactionType = newTransactionType;
-            }
-        }
-    }
-
-    private String transactionType;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,6 +58,7 @@ public class AddEditTransactionActivity extends BaseActivity {
             }
         });
 
+        Boolean isEditMode = GlobalState.getInstance().getTransactionData() != null;
         if (isEditMode) {
             getSupportActionBar().setTitle("Edit Item");
         } else {
@@ -135,56 +96,33 @@ public class AddEditTransactionActivity extends BaseActivity {
 
             }
         });
-
-        setView();
     }
-
-    public void setView() {
-        // Check if it's editing existing record
-        Integer id = getIntent().getIntExtra("id", -1);
-        if (id < 0) {
-            return;
-        }
-
-        setTransactionType(GlobalState.getInstance().getTransactionData().getType());
-
-//        setLoading(true);
-//        controller.fetchTransactionData(id);
-    }
-
-//    @Subscribe
-//    public void onDataFetched(TransactionDataFetchComplete event) {
-//        setLoading(false);
-//        if (!event.getSuccess()) {
-//            showError(event.getMessage());
-//        } else {
-//            setTransactionType(event.getHeader().getType());
-//            adapter.getHeader().setHeaderData(event.getHeader());
-//            adapter.getDetail().setDetailData(event.getDetail());
-//        }
-//    }
 
     public void addItem() {
-        if (transactionType.equalsIgnoreCase("PO")) {
-            Intent i = new Intent(this, TransactionItemActivity.class);
+        if (adapter.getHeader().getTransactionType().equalsIgnoreCase("PO")) {
+            // Kalau halaman PO, maka input manual
+            Intent i = new Intent(this, TransactionItemPOAddActivity.class);
             Bundle b = new Bundle();
             b.putInt("index", -1);
             i.putExtras(b);
             startActivity(i);
         } else {
-            showAddDialog();
+            // Kalau ready stock, tampilkan dialog untuk picker
+            DialogFragment newFragment = InventoryPickerDialogFragment.newInstance(new InventoryPickerDialogFragment.Callback() {
+                @Override
+                public void onItemSelected(TransactionItem item) {
+                    EventBus.getDefault().post(new TransactionItemChangeEvent(-1, item));
+                }
+            }, null);
+            newFragment.show(getSupportFragmentManager(), "dialog");
         }
     }
 
-    private void showAddDialog() {
-        DialogFragment newFragment = InventoryPickerDialogFragment.newInstance(new InventoryPickerDialogFragment.Callback() {
-            @Override
-            public void onItemSelected(Inventory item, Double qty) {
-                TransactionItem data = new TransactionItem(null, item.getName(), item.getCapitalPrice(), item.getSellPrice(), qty);
-                EventBus.getDefault().post(new TransactionItemChangeEvent(-1, data));
-            }
-        }, null);
-        newFragment.show(getSupportFragmentManager(), "dialog");
+    public Boolean isCurrentlyHasDetail() {
+        return adapter.getDetail().getDetailData() != null && adapter.getDetail().getDetailData().size() > 0;
+    }
+    public void clearDetail() {
+        adapter.getDetail().setDetailData(new ArrayList<TransactionItem>());
     }
 
     @Override
@@ -245,7 +183,11 @@ public class AddEditTransactionActivity extends BaseActivity {
         Transaction header = adapter.getHeader().getHeaderData();
         List<TransactionItem> details = adapter.getDetail().getDetailData();
 
-        controller.saveTransaction(header, details);
+        if (header.getId() == null) {
+            controller.addTransaction(header, details);
+        } else {
+            controller.updateTransaction(header, details);
+        }
     }
 
     @Subscribe

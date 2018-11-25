@@ -53,12 +53,6 @@ public class BaseController {
     }
 
     public Double findAvailableStock(String name, Double hargaJual, Double hargaBeli) {
-        Double inventoryTotal = getDB().inventoryDao().findStockByProps(name, hargaJual, hargaBeli);
-        if (inventoryTotal == null)
-            inventoryTotal = 0d;
-        Double inTransaction = getDB().transactionItemDao().findUsageByProps(name, hargaJual, hargaBeli, TransactionTypeEnum.READY_STOCK);
-        if (inTransaction == null)
-            inTransaction = 0d;
-        return inventoryTotal - inTransaction;
+        return getDB().inventoryDao().findByProps(name, hargaJual, hargaBeli).getQuantity();
     }
 }
